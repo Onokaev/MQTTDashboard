@@ -1,9 +1,17 @@
 package com.jadayoIscariot;
 
+<<<<<<< HEAD
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.util.*;
+=======
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+>>>>>>> 920851221a59b1ca8a669d2d0f46442fe4dd42f4
 
 public class MQTTDashboard{
 
