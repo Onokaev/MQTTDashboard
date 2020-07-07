@@ -45,7 +45,7 @@ class ConnectionsGui extends JPanel{
 
 	}
 	
-	
+
 	public class AddButtonListener implements ActionListener{
 		public void actionPerformed(ActionEvent e){
 			//display a dialog box for entering the connection vars
