@@ -3,6 +3,9 @@ package com.jadayoIscariot;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+
+import jdk.internal.org.objectweb.asm.tree.analysis.Frame;
+
 import java.util.*;
 
 public class MQTTDashboard{
@@ -26,11 +29,12 @@ class ConnectionsGui extends JPanel{
 	String port;
 	String userName;
 	String passWord;
+	JFrame frame;
 
 
 
 	public void makeConnectionGui(){
-		JFrame frame = new JFrame();
+		frame = new JFrame("MQTT Dashboard");
 		BorderLayout layout = new BorderLayout();
 		JPanel panel = new JPanel(layout);
 		panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -47,13 +51,21 @@ class ConnectionsGui extends JPanel{
 	
 
 	public class AddButtonListener implements ActionListener{
+		JTextField clientidField = new JTextField(20);
+		JTextField serverField = new JTextField(20);
+		JTextField portField = new JTextField(20);
+		JTextField userField = new JTextField(20);
+		JTextField passField = new JTextField(20);
+	
 		public void actionPerformed(ActionEvent e){
 			//display a dialog box for entering the connection vars
+			frame.setVisible(false);
 			JFrame insFrame = new JFrame("Connection variables");
-			insFrame.setSize(200,200);
+			insFrame.setSize(300,400);
 		
 			BorderLayout layout = new BorderLayout();
 			JPanel panel = new JPanel();
+			panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
 			JLabel theClientID = new JLabel("Client ID");
 			JLabel theServerLabel = new JLabel("Server");
@@ -61,15 +73,41 @@ class ConnectionsGui extends JPanel{
 			JLabel theUserLabel = new JLabel("Username");
 			JLabel thePassLabel = new JLabel("Password");
 
-			panel.add(BorderLayout.CENTER, theClientID);
-			panel.add(BorderLayout.CENTER, theUserLabel);
-			panel.add(BorderLayout.CENTER, thePassLabel);
-			panel.add(BorderLayout.CENTER, thePortLabel);
-			panel.add(BorderLayout.CENTER, theServerLabel);
+			panel.add(theClientID);
+			panel.add(clientidField);
 
+			panel.add(theUserLabel);
+			panel.add(userField);
+
+			panel.add(thePassLabel);
+			panel.add(passField);
+
+			panel.add(theServerLabel);
+			panel.add(serverField);
+
+			panel.add(thePortLabel);
+			panel.add(portField);
+
+			JButton saveButton = new JButton("Save Variables");
+			saveButton.addActionListener(new connectionSaveActionListener());
+			panel.add(saveButton);
+
+			insFrame.getContentPane().add(BorderLayout.CENTER, panel);
 			insFrame.setVisible(true);
 
 
+		}
+
+		public class connectionSaveActionListener implements ActionListener{
+			public void actionPerformed(ActionEvent e){
+				//save the variables
+				clientId = clientidField.getText();
+				serverString = serverField.getText();
+				port = portField.getText();
+				userName = userField.getText();
+				passWord = passField.getText();
+				frame.setVisible(true);
+			}
 		}
 	}
 
