@@ -1,56 +1,79 @@
 package com.jadayoIscariot;
 
-<<<<<<< HEAD
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.util.*;
-=======
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
->>>>>>> 920851221a59b1ca8a669d2d0f46442fe4dd42f4
 
 public class MQTTDashboard{
 
 	JFrame frame;
-	public static void main(String[] args){
+	static ConnectionsGui connectionsGui;
+
+	public static void main(String[] args) {
 		System.out.println("MQTT is up");
-		new Gui().makeFrame();
+		connectionsGui = new ConnectionsGui();
+		connectionsGui.makeConnectionGui();
 	}
 }
 
-class Gui extends JPanel{
+
+class ConnectionsGui extends JPanel{
 
 	private static final long serialVersionUID = 1L;
-	JPanel panel;
-	JFrame frame;
+	String clientId;
+	String serverString;
+	String port;
+	String userName;
+	String passWord;
 
 
-	public void makeFrame(){
-		frame = new JFrame("MQTT Dashboard");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+	public void makeConnectionGui(){
+		JFrame frame = new JFrame();
 		BorderLayout layout = new BorderLayout();
-		panel = new JPanel(layout);
+		JPanel panel = new JPanel(layout);
 		panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-		JTextField userName = new JTextField(20);
-		JLabel usernameLabel = new JLabel("Username");
-		JLabel passwordLabel = new JLabel("Password");
-		JLabel friendName = new JLabel("Friendly Name");
-		JLabel topic = new JLabel("Topic");
+		JButton addButton = new JButton("Add Connection");
+		addButton.addActionListener(new AddButtonListener());
+		panel.add(BorderLayout.SOUTH, addButton);	
 
-		panel.add(usernameLabel);
-		panel.add(userName);
-
-
-		frame.getContentPane().add(BorderLayout.WEST, panel);
-		frame.setSize(600,400);
+		frame.getContentPane().add(BorderLayout.CENTER, panel);
+		frame.setSize(400,400);
 		frame.setVisible(true);
-		
+
 	}
+	
+	
+	public class AddButtonListener implements ActionListener{
+		public void actionPerformed(ActionEvent e){
+			//display a dialog box for entering the connection vars
+			JFrame insFrame = new JFrame("Connection variables");
+			insFrame.setSize(200,200);
+		
+			BorderLayout layout = new BorderLayout();
+			JPanel panel = new JPanel();
+
+			JLabel theClientID = new JLabel("Client ID");
+			JLabel theServerLabel = new JLabel("Server");
+			JLabel thePortLabel = new JLabel("Port");
+			JLabel theUserLabel = new JLabel("Username");
+			JLabel thePassLabel = new JLabel("Password");
+
+			panel.add(BorderLayout.CENTER, theClientID);
+			panel.add(BorderLayout.CENTER, theUserLabel);
+			panel.add(BorderLayout.CENTER, thePassLabel);
+			panel.add(BorderLayout.CENTER, thePortLabel);
+			panel.add(BorderLayout.CENTER, theServerLabel);
+
+			insFrame.setVisible(true);
+
+
+		}
+	}
+
+
 	//java com.jadayoIscariot.MQTTDashboard
 	//javac -d ../Classes com/jadayoIscariot/MQTTDashboard.java
 }
