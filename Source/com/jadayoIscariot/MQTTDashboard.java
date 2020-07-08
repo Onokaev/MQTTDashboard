@@ -2,10 +2,9 @@ package com.jadayoIscariot;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
+
 import javax.swing.*;
-
-import jdk.internal.org.objectweb.asm.tree.analysis.Frame;
-
 import java.util.*;
 
 public class MQTTDashboard{
@@ -16,12 +15,15 @@ public class MQTTDashboard{
 	public static void main(String[] args) {
 		System.out.println("MQTT is up");
 		connectionsGui = new ConnectionsGui();
+
+		//call this when serialization returns null for objects
 		connectionsGui.makeConnectionGui();
 	}
 }
 
 
-class ConnectionsGui extends JPanel{
+
+class ConnectionsGui extends JPanel {
 
 	private static final long serialVersionUID = 1L;
 	String clientId;
@@ -31,7 +33,9 @@ class ConnectionsGui extends JPanel{
 	String passWord;
 	JFrame frame;
 
-
+	public ConnectionsGui(){
+		makeConnectionGui();
+	}
 
 	public void makeConnectionGui(){
 		frame = new JFrame("MQTT Dashboard");
@@ -49,18 +53,19 @@ class ConnectionsGui extends JPanel{
 
 	}
 	
-
-	public class AddButtonListener implements ActionListener{
+	public class AddButtonListener implements ActionListener, Serializable{
+		private static final long serialVersionUID = 1L;
 		JTextField clientidField = new JTextField(20);
 		JTextField serverField = new JTextField(20);
 		JTextField portField = new JTextField(20);
 		JTextField userField = new JTextField(20);
 		JTextField passField = new JTextField(20);
+		JFrame insFrame;
 	
 		public void actionPerformed(ActionEvent e){
 			//display a dialog box for entering the connection vars
 			frame.setVisible(false);
-			JFrame insFrame = new JFrame("Connection variables");
+			insFrame = new JFrame("Connection variables");
 			insFrame.setSize(300,400);
 		
 			BorderLayout layout = new BorderLayout();
@@ -98,8 +103,13 @@ class ConnectionsGui extends JPanel{
 
 		}
 
-		public class connectionSaveActionListener implements ActionListener{
-			public void actionPerformed(ActionEvent e){
+		public class connectionSaveActionListener implements ActionListener, Serializable{
+			/**
+			 *
+			 */
+			private static final long serialVersionUID = 1L;
+
+			public void actionPerformed(ActionEvent e) {
 				//save the variables
 				clientId = clientidField.getText();
 				serverString = serverField.getText();
@@ -107,9 +117,22 @@ class ConnectionsGui extends JPanel{
 				userName = userField.getText();
 				passWord = passField.getText();
 				frame.setVisible(true);
+				insFrame.setVisible(false);
+
+				try{
+					FileOutputStream fs = new FileOutputStream("conneection.ser");
+					ObjectOutputStream oStream = new ObjectOutputStream(fs);
+					oStream.writeObject(this);
+					oStream.close();
+
+				}catch(Exception ex){
+					ex.printStackTrace();
+				}
 			}
 		}
 	}
+
+	//how should an object of this class behave. Add behaviour
 
 
 	//java com.jadayoIscariot.MQTTDashboard
