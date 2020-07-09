@@ -3,21 +3,40 @@ package com.jadayoIscariot;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-
 import javax.swing.*;
-import java.util.*;
+
+
 
 public class MQTTDashboard{
 
 	JFrame frame;
-	static ConnectionsGui connectionsGui;
+	//static ConnectionsGui connectionsGui;
 
 	public static void main(String[] args) {
+		ConnectionsGui connectionsGui = new ConnectionsGui();
+
 		System.out.println("MQTT is up");
-		connectionsGui = new ConnectionsGui();
+
+		//before this, we should have a try catch that checks for any serialized objects of connectionsGui
+		try{
+			ObjectInputStream oStream = new ObjectInputStream(new FileInputStream("conneection.ser"));
+			Object one = oStream.readObject();
+
+			ConnectionsGui.AddButtonListener.connectionSaveActionListener conn1 = (ConnectionsGui.AddButtonListener.connectionSaveActionListener) one;
+			//solve this
+
+			oStream.close();
+
+		}catch(Exception ex){
+			System.out.println("Couldn't find any serialized objects. Create new ones");
+			ex.printStackTrace();
+			connectionsGui = new ConnectionsGui();
+			connectionsGui.makeConnectionGui();
+		}
 
 		//call this when serialization returns null for objects
-		connectionsGui.makeConnectionGui();
+
+
 	}
 }
 
@@ -32,15 +51,17 @@ class ConnectionsGui extends JPanel {
 	String userName;
 	String passWord;
 	JFrame frame;
+	JPanel panel;
 
 	public ConnectionsGui(){
 		makeConnectionGui();
 	}
 
 	public void makeConnectionGui(){
+
 		frame = new JFrame("MQTT Dashboard");
 		BorderLayout layout = new BorderLayout();
-		JPanel panel = new JPanel(layout);
+		panel = new JPanel(layout);
 		panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
 		JButton addButton = new JButton("Add Connection");
@@ -68,7 +89,6 @@ class ConnectionsGui extends JPanel {
 			insFrame = new JFrame("Connection variables");
 			insFrame.setSize(300,400);
 		
-			BorderLayout layout = new BorderLayout();
 			JPanel panel = new JPanel();
 			panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
@@ -133,6 +153,25 @@ class ConnectionsGui extends JPanel {
 	}
 
 	//how should an object of this class behave. Add behaviour
+	//add the objects to the screen
+
+	public void addConnectionToScreen(){
+		JButton connButton = new JButton(this.clientId);
+		connButton.addActionListener(new ConnButtonActionListener());
+		panel.add(BorderLayout.NORTH, connButton);
+
+	}
+
+	public class ConnButtonActionListener implements ActionListener, Serializable{
+		/**
+		 *
+		 */
+		private static final long serialVersionUID = 1L;
+
+		public void actionPerformed(ActionEvent e) {
+			
+		}
+	}
 
 
 	//java com.jadayoIscariot.MQTTDashboard
