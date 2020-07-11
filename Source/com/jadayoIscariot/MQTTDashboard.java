@@ -57,7 +57,7 @@ public class MQTTDashboard extends JPanel implements Serializable{
 	}
 
 	//loads the connection objects to the homescreen
-	public class loadConnectionObjectsListener implements ActionListener{
+	public class loadConnectionObjectsListener extends connectionObjects implements ActionListener{
 		public void actionPerformed(ActionEvent e){
 
 			for(connectionObjects a : connList){
@@ -71,7 +71,7 @@ public class MQTTDashboard extends JPanel implements Serializable{
 		}
 
 		//creating gui for the specific objects
-		public class connObjectListener implements ActionListener{
+		public class connObjectListener extends loadConnectionObjectsListener implements ActionListener{
 			JFrame objectFrame = new JFrame("MQTT");
 			BorderLayout layout = new BorderLayout();
 			JTabbedPane thePane = new JTabbedPane();
@@ -97,10 +97,9 @@ public class MQTTDashboard extends JPanel implements Serializable{
 			}
 		}
 
-		public class connectSubMQTTListener implements ActionListener{
+		public class connectSubMQTTListener extends connObjectListener implements ActionListener{
 			public void actionPerformed(ActionEvent e){
-
-
+				
 			}
 		}
 	}
@@ -194,3 +193,6 @@ public class MQTTDashboard extends JPanel implements Serializable{
 
 //java com.jadayoIscariot.MQTTDashboard
 	//javac -d ../Classes com/jadayoIscariot/MQTTDashboard.java
+
+
+
