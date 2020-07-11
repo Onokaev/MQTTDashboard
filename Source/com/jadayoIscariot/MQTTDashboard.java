@@ -17,8 +17,8 @@ public class MQTTDashboard extends JPanel implements Serializable{
 	Box objectsBox = new Box(BoxLayout.Y_AXIS);
 	JPanel objectsPanel;
 	ArrayList<connectionObjects> connList = new ArrayList<connectionObjects>();
+	ArrayList<connectionObjects> temporaryList = new ArrayList<connectionObjects>();
 	connectionObjects cObject;
-	static int counter = 0;
 
 
 	public static void main(String[] args) {
@@ -67,16 +67,43 @@ public class MQTTDashboard extends JPanel implements Serializable{
 			}
 			objectsPanel.add(BorderLayout.CENTER, objectsBox);
 			connList.clear();
+			//temporary list is already there. so just clear this one so that we dont have duplicates when loading to screen
 		}
 
-		//the connection objects do the same thing, either subscribe to a topic or post to one
+		//creating gui for the specific objects
 		public class connObjectListener implements ActionListener{
+			JFrame objectFrame = new JFrame("MQTT");
+			BorderLayout layout = new BorderLayout();
+			JTabbedPane thePane = new JTabbedPane();
+			JComponent subscribePanel = new JPanel(layout);  
+			JComponent publishPanel = new JPanel(layout);
+
 			public void actionPerformed(ActionEvent e){
+				//display a new frame for the specific connection object selected
+
+				thePane.addTab("Subscriptions Tab", subscribePanel);
+				thePane.addTab("Publications Tab", publishPanel);
+
+				JButton connectSubMQTTButton = new JButton("Connect To Broker");
+				connectSubMQTTButton.addActionListener(new connectSubMQTTListener());
+				
+				subscribePanel.add(BorderLayout.NORTH, connectSubMQTTButton);
+				
+
+				objectFrame.getContentPane().add(BorderLayout.CENTER, thePane);
+				objectFrame.setSize(500,500);
+				objectFrame.setVisible(true);
+
+			}
+		}
+
+		public class connectSubMQTTListener implements ActionListener{
+			public void actionPerformed(ActionEvent e){
+
 
 			}
 		}
 	}
-
 
 
 	public class connectionObjects extends JPanel implements Serializable, ActionListener{
@@ -136,8 +163,9 @@ public class MQTTDashboard extends JPanel implements Serializable{
 			port = portField.getText();
 			userName = userField.getText();
 			passWord = passField.getText();
-			connList.add(this);
-			System.out.println(connList);
+			connList.add(this);   //this list is used to lead objects to the objectPane. cleared later
+			temporaryList.add(this);  //this is maintained
+
 			frame.setVisible(false);
 
 		}
@@ -146,6 +174,20 @@ public class MQTTDashboard extends JPanel implements Serializable{
 		public String getClientID(){
 			return clientId;
 		}
+
+		//add behaviour
+		public void connectToBroker(){
+
+		}
+
+		public void subscribeToTopic(int qos){
+
+		}
+
+		public void publishToTopic(int qos){
+
+		}
+
 	}
 }
 
