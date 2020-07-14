@@ -5,9 +5,6 @@ import java.io.*;
 import javax.swing.*;
 import java.util.*;
 
-
-
-
 public class MQTTDashboard extends JPanel implements Serializable{
 
 	private static final long serialVersionUID = -1655725478146553709L;
@@ -53,6 +50,7 @@ public class MQTTDashboard extends JPanel implements Serializable{
 		public void actionPerformed(ActionEvent e){
 			//create a connection object
 			cObject = new connectionObjects();
+			cObject.makeConnectionObject();
 		}
 	}
 
@@ -80,14 +78,13 @@ public class MQTTDashboard extends JPanel implements Serializable{
 
 			public void actionPerformed(ActionEvent e){
 				//display a new frame for the specific connection object selected
+				JButton connectMQTTButton = new JButton("Connect To Broker");
+				connectMQTTButton.addActionListener(new connectMQTTListener());
+				objectFrame.getContentPane().add(BorderLayout.NORTH, connectMQTTButton);
 
 				thePane.addTab("Subscriptions Tab", subscribePanel);
 				thePane.addTab("Publications Tab", publishPanel);
 
-				JButton connectSubMQTTButton = new JButton("Connect To Broker");
-				connectSubMQTTButton.addActionListener(new connectSubMQTTListener());
-				
-				subscribePanel.add(BorderLayout.NORTH, connectSubMQTTButton);
 				
 
 				objectFrame.getContentPane().add(BorderLayout.CENTER, thePane);
@@ -97,11 +94,12 @@ public class MQTTDashboard extends JPanel implements Serializable{
 			}
 		}
 
-		public class connectSubMQTTListener extends connObjectListener implements ActionListener{
+		public class connectMQTTListener extends connObjectListener implements ActionListener{
 			public void actionPerformed(ActionEvent e){
 				
 			}
 		}
+
 	}
 
 
@@ -123,7 +121,7 @@ public class MQTTDashboard extends JPanel implements Serializable{
 	
 		public connectionObjects(){
 			
-			makeConnectionObject();
+			//makeConnectionObject();
 		}
 	
 		public void makeConnectionObject(){
