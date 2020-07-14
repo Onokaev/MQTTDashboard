@@ -55,7 +55,7 @@ public class MQTTDashboard extends JPanel implements Serializable{
 	}
 
 	//loads the connection objects to the homescreen
-	public class loadConnectionObjectsListener extends connectionObjects implements ActionListener{
+	public class loadConnectionObjectsListener implements ActionListener{
 		public void actionPerformed(ActionEvent e){
 
 			for(connectionObjects a : connList){
@@ -69,8 +69,9 @@ public class MQTTDashboard extends JPanel implements Serializable{
 		}
 
 		//creating gui for the specific objects
-		public class connObjectListener extends loadConnectionObjectsListener implements ActionListener{
+		public class connObjectListener implements ActionListener{
 			JFrame objectFrame = new JFrame("MQTT");
+			JPanel northFramePanel = new JPanel();
 			BorderLayout layout = new BorderLayout();
 			JTabbedPane thePane = new JTabbedPane();
 			JComponent subscribePanel = new JPanel(layout);  
@@ -80,13 +81,20 @@ public class MQTTDashboard extends JPanel implements Serializable{
 				//display a new frame for the specific connection object selected
 				JButton connectMQTTButton = new JButton("Connect To Broker");
 				connectMQTTButton.addActionListener(new connectMQTTListener());
-				objectFrame.getContentPane().add(BorderLayout.NORTH, connectMQTTButton);
+				northFramePanel.add(connectMQTTButton);
+
+				JButton addTopic = new JButton("+ Topic");
+				addTopic.addActionListener(new addTopicListener());
+				northFramePanel.add(addTopic);
+
+				objectFrame.getContentPane().add(BorderLayout.NORTH, northFramePanel);
+		
 
 				thePane.addTab("Subscriptions Tab", subscribePanel);
-				thePane.addTab("Publications Tab", publishPanel);
-
 				
 
+				thePane.addTab("Publications Tab", publishPanel);
+				
 				objectFrame.getContentPane().add(BorderLayout.CENTER, thePane);
 				objectFrame.setSize(500,500);
 				objectFrame.setVisible(true);
@@ -94,9 +102,16 @@ public class MQTTDashboard extends JPanel implements Serializable{
 			}
 		}
 
-		public class connectMQTTListener extends connObjectListener implements ActionListener{
+		public class addTopicListener implements ActionListener{
 			public void actionPerformed(ActionEvent e){
-				
+
+			}
+		}
+
+		public class connectMQTTListener implements ActionListener{
+			public void actionPerformed(ActionEvent e){
+				//connect to MQTT broker
+
 			}
 		}
 
