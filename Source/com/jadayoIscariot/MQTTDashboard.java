@@ -55,7 +55,18 @@ public class MQTTDashboard extends JPanel implements Serializable{
 	}
 
 	//loads the connection objects to the homescreen
-	public class loadConnectionObjectsListener implements ActionListener{
+	public class loadConnectionObjectsListener extends connectionObjects implements ActionListener{
+		JFrame topicFrame;
+		JPanel topicPanel;
+
+		JTextField friendlyNameField;
+		JTextField topicField;
+		JTextField qosField;
+
+		String MTopic;
+		String MFriendlyName;
+		String MQos;
+
 		public void actionPerformed(ActionEvent e){
 
 			for(connectionObjects a : connList){
@@ -77,6 +88,8 @@ public class MQTTDashboard extends JPanel implements Serializable{
 			JComponent subscribePanel = new JPanel(layout);  
 			JComponent publishPanel = new JPanel(layout);
 
+			
+
 			public void actionPerformed(ActionEvent e){
 				//display a new frame for the specific connection object selected
 				JButton connectMQTTButton = new JButton("Connect To Broker");
@@ -90,8 +103,7 @@ public class MQTTDashboard extends JPanel implements Serializable{
 				objectFrame.getContentPane().add(BorderLayout.NORTH, northFramePanel);
 		
 
-				thePane.addTab("Subscriptions Tab", subscribePanel);
-				
+				thePane.addTab("Subscriptions Tab", subscribePanel);				
 
 				thePane.addTab("Publications Tab", publishPanel);
 				
@@ -103,14 +115,52 @@ public class MQTTDashboard extends JPanel implements Serializable{
 		}
 
 		public class addTopicListener implements ActionListener{
+			
 			public void actionPerformed(ActionEvent e){
+				topicFrame  = new JFrame("Add Topic");
+				topicPanel = new JPanel();
+				topicPanel.setLayout(new BoxLayout(topicPanel, BoxLayout.Y_AXIS));
 
+				JLabel theFriendlyNameLabel = new JLabel("Friendly Name");
+				JLabel theTopicLabel = new JLabel("Topic");
+				JLabel theQosLabel = new JLabel("QoS");
+
+				friendlyNameField = new JTextField(20);
+				topicField = new JTextField(20);
+				qosField = new JTextField(20);
+
+				JButton createTopicButton = new JButton("Create");
+				createTopicButton.addActionListener(new CreateTopicListener());
+
+
+				topicPanel.add(theFriendlyNameLabel);
+				topicPanel.add(friendlyNameField);
+				topicPanel.add(theTopicLabel);
+				topicPanel.add(topicField);
+				topicPanel.add(theQosLabel);
+				topicPanel.add(qosField);
+				topicPanel.add(createTopicButton);
+
+				topicFrame.getContentPane().add(BorderLayout.CENTER, topicPanel);
+				topicFrame.setSize(250,250);
+				topicFrame.setVisible(true);
+			}
+
+			public class CreateTopicListener implements ActionListener{
+				public void actionPerformed(ActionEvent e){
+					MTopic = topicField.getText();
+					MFriendlyName = friendlyNameField.getText();
+					MQos = qosField.getText();
+				}
 			}
 		}
 
 		public class connectMQTTListener implements ActionListener{
 			public void actionPerformed(ActionEvent e){
 				//connect to MQTT broker
+				
+
+				
 
 			}
 		}
@@ -133,11 +183,6 @@ public class MQTTDashboard extends JPanel implements Serializable{
 		transient JTextField portField = new JTextField(20);
 		transient JTextField userField = new JTextField(20);
 		transient JTextField passField = new JTextField(20);
-	
-		public connectionObjects(){
-			
-			//makeConnectionObject();
-		}
 	
 		public void makeConnectionObject(){
 	
@@ -177,7 +222,6 @@ public class MQTTDashboard extends JPanel implements Serializable{
 			passWord = passField.getText();
 			connList.add(this);   //this list is used to lead objects to the objectPane. cleared later
 			temporaryList.add(this);  //this is maintained
-
 			frame.setVisible(false);
 
 		}
