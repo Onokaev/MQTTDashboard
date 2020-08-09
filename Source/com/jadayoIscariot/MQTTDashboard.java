@@ -1,252 +1,319 @@
 package com.jadayoIscariot;
+
+
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
 import javax.swing.*;
-import java.util.*;
-
-public class MQTTDashboard extends JPanel implements Serializable{
-
-	private static final long serialVersionUID = -1655725478146553709L;
-
-	JFrame frame;
-	JPanel homePanel;
-	Box objectsBox = new Box(BoxLayout.Y_AXIS);
-	JPanel objectsPanel;
-	ArrayList<connectionObjects> connList = new ArrayList<connectionObjects>();
-	ArrayList<connectionObjects> temporaryList = new ArrayList<connectionObjects>();
-	connectionObjects cObject;
+import java.util.*;  
 
 
-	public static void main(String[] args) {
-		new MQTTDashboard().homePage();
-	}
+public class MQTTDashboard{
+    ArrayList<mqttClass> connList = new ArrayList<mqttClass>();
+	ArrayList<mqttClass> temporaryList = new ArrayList<mqttClass>();
+    public static void main(String[] args){
+       
+       // gui.addConnectionObjectsToPanel();
 
-	public void homePage(){   //creates the GUI for homepage and kickstarts the process
-		frame = new JFrame("MQTT Dashboard");
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		BorderLayout layout = new BorderLayout();
-		homePanel = new JPanel(layout);
-		objectsPanel = new JPanel(layout);
+        String subTopic = "testTopic";
+        String pubTopic = "testTopic";
+        String content = "This is the message";
+        int qoS = 2;
+        String broker = "tailor.cloudmqtt.com";
+        String clientidd = "tester";
+        MemoryPersistence persistence = new MemoryPersistence();
 
-		//box layout for the objects panel
+        try{
+            MqttClient client = new MqttClient(broker, clientidd, persistence);
 
-		JButton homeAddButton = new JButton("Add Connection Variables");
-		homeAddButton.addActionListener(new AddConnectionObjectsListener());
-		homePanel.add(BorderLayout.SOUTH, homeAddButton);
+            MqttConnectOptions connOpts = new MqttConnectOptions();
+            connOpts.setUserName("qxthyopl");
+            connOpts.setPassword("VcMajZtxlQVJ".toCharArray());
+            connOpts.setCleanSession(true);
 
-		JButton loadButton = new JButton("Load connection objects");
-		loadButton.addActionListener(new loadConnectionObjectsListener());
-		homePanel.add(BorderLayout.NORTH, loadButton);
-		homePanel.add(BorderLayout.CENTER, objectsPanel);
+            client.setCallback(new MqttCallback(){
+                public void messageArrived(String topic, MqttMessage message){
+                    System.out.println("Received message topic:" + topic);
+                    System.out.println("Received message Qos:" + message.getQos());
+                    System.out.println("Received message content:" + new String(message.getPayload()));
 
-		frame.setSize(400,400);
-		frame.getContentPane().add(BorderLayout.CENTER, homePanel);
-		frame.setVisible(true);
-	}
+                }
+
+                public void deliveryComplete(IMqttDeliveryToken token){
+                    System.out.println("Delivery complete "+token.isComplete());
+
+                }
+
+                public void connectionLost(Throwable cause){
+                    System.out.println("Connection Lost");
+                    
+                }
+            });
+
+            //establish a connection
+            System.out.println("Connecting to "+broker);
+            client.connect(connOpts);
+            System.out.println("Connected");
+            System.out.println("Publishing message");
+
+            //subscribe
+            client.subscribe(subTopic);
+
+            MqttMessage message = new MqttMessage(content.getBytes());
+            message.setQos(qoS);
+            client.publish(pubTopic,message);
+            System.out.println("Message published");
+
+            client.disconnect();
+            client.close();
+
+        }catch(MqttException me){
+            System.out.println("reason " + me.getReasonCode());
+            System.out.println("msg " + me.getMessage());
+            System.out.println("loc " + me.getLocalizedMessage());
+            System.out.println("cause " + me.getCause());
+            System.out.println("excep " + me);
+            me.printStackTrace();
+            
+        }
+    }
+
+    
+    public class Gui extends JPanel{
+        JFrame frame = new JFrame("Mqtt Dashboard");
+        JPanel panel;
+        Box connectionObjectsBox = new Box(BoxLayout.Y_AXIS);
+        mqttClass mqttObj = new mqttClass();
+
+        public void makeFrame(){
+            BorderLayout layout = new BorderLayout();
+            panel = new JPanel(layout);
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+            JButton homeAddButton = new JButton("Add Connection Variables");
+            homeAddButton.addActionListener(new AddConnectionObjectsListener());
+            panel.add(BorderLayout.SOUTH, homeAddButton);;
+            
+            frame.getContentPane().add(BorderLayout.CENTER, panel);
+            frame.setSize(400,400);
+            frame.setVisible(true);
+        }
 
 
-	public class AddConnectionObjectsListener implements ActionListener{
-		public void actionPerformed(ActionEvent e){
-			//create a connection object
-			cObject = new connectionObjects();
-			cObject.makeConnectionObject();
-		}
-	}
+        public class AddConnectionObjectsListener implements ActionListener{
+            JTextField clientidField = new JTextField(20);
+            JTextField serverField = new JTextField(20);
+            JTextField portField = new JTextField(20);
+            JTextField userField = new JTextField(20);
+            JTextField passField = new JTextField(20);
+            JFrame Connframe = new JFrame("Add Connection Variables");
 
-	//loads the connection objects to the homescreen
-	public class loadConnectionObjectsListener extends connectionObjects implements ActionListener{
-		JFrame topicFrame;
-		JPanel topicPanel;
+            public void actionPerformed(ActionEvent e){
+                Connframe = new JFrame("Add Connection Variables");
+                JPanel ConnPanel = new JPanel();
+                ConnPanel.setLayout(new BoxLayout(ConnPanel, BoxLayout.Y_AXIS));
 
-		JTextField friendlyNameField;
-		JTextField topicField;
-		JTextField qosField;
+                clientidField = new JTextField(20);
+                serverField = new JTextField(20);
+                portField = new JTextField(20);
+                userField = new JTextField(20);
+                passField = new JTextField(20);
 
-		String MTopic;
-		String MFriendlyName;
-		String MQos;
+                JLabel theClientID = new JLabel("Client ID");
+                JLabel theServerLabel = new JLabel("Server");
+                JLabel thePortLabel = new JLabel("Port");
+                JLabel theUserLabel = new JLabel("Username");
+                JLabel thePassLabel = new JLabel("Password");
+                JButton saveButton = new JButton("Save variables");
+                saveButton.addActionListener(new SaveVariablesListener());
 
-		public void actionPerformed(ActionEvent e){
+                ConnPanel.add(theClientID);
+                ConnPanel.add(clientidField);
+                ConnPanel.add(theUserLabel);
+                ConnPanel.add(userField);
+                ConnPanel.add(thePassLabel);
+                ConnPanel.add(passField);
+                ConnPanel.add(theServerLabel);
+                ConnPanel.add(serverField);
+                ConnPanel.add(thePortLabel);
+                ConnPanel.add(portField);
+                ConnPanel.add(saveButton);
+                Connframe.setSize(300,300);
+                Connframe.getContentPane().add(BorderLayout.CENTER, ConnPanel);
+                Connframe.setVisible(true);
+            }
 
-			for(connectionObjects a : connList){
-				JButton connButton = new JButton(a.getClientID());
-				connButton.addActionListener(new connObjectListener());
-				objectsBox.add(connButton);
-			}
-			objectsPanel.add(BorderLayout.CENTER, objectsBox);
-			connList.clear();
-			//temporary list is already there. so just clear this one so that we dont have duplicates when loading to screen
-		}
+            public class SaveVariablesListener implements ActionListener{
 
-		//creating gui for the specific objects
-		public class connObjectListener implements ActionListener{
-			JFrame objectFrame = new JFrame("MQTT");
-			JPanel northFramePanel = new JPanel();
-			BorderLayout layout = new BorderLayout();
-			JTabbedPane thePane = new JTabbedPane();
-			JComponent subscribePanel = new JPanel(layout);  
-			JComponent publishPanel = new JPanel(layout);
+                public void actionPerformed(ActionEvent e){
+                    //saves the variables and adds them to the screen
+                    mqttObj.clientId = clientidField.getText();
+                    mqttObj.serverString = serverField.getText();
+                    mqttObj.userName = userField.getText();
+                    mqttObj.passWord = passField.getText();
+                    connList.add(mqttObj);
+                    temporaryList.add(mqttObj);     
+                    Connframe.setVisible(false);
+                    addConnectionObjectsToPanel();   
+                }
+            }
 
-			
+        }
 
-			public void actionPerformed(ActionEvent e){
-				//display a new frame for the specific connection object selected
-				JButton connectMQTTButton = new JButton("Connect To Broker");
-				connectMQTTButton.addActionListener(new connectMQTTListener());
-				northFramePanel.add(connectMQTTButton);
+        public void addConnectionObjectsToPanel(){
+            for(mqttClass mqttObject : temporaryList){
+                JButton connectionButton = new JButton(mqttObject.clientId);
+                connectionButton.addActionListener(new ConnectionButtonListener());
+                connectionObjectsBox.add(connectionButton);
+            }
+            temporaryList.clear();
+            panel.add(BorderLayout.CENTER, connectionObjectsBox);
+        }
 
-				JButton addTopic = new JButton("+ Topic");
+        public class ConnectionButtonListener implements ActionListener{
+
+            JFrame topicFrame;
+            JPanel topicPanel;
+
+            JTextField friendlyNameField;
+            JTextField topicField;
+            JTextField qosField;
+
+            String MTopic;
+            String MFriendlyName;
+            String MQos;
+
+
+            public void actionPerformed(ActionEvent e){
+                makeObjectsGui();
+
+            }
+
+            public void makeObjectsGui(){
+                JFrame objectsFrame = new JFrame("Sub-Dash");
+                BorderLayout objectsLayout = new BorderLayout();
+                JPanel objectsPanel = new JPanel(objectsLayout);
+                JPanel northFramePanel = new JPanel();
+                JTabbedPane thePJTabbedPane = new JTabbedPane();
+                JComponent subscribePanel = new JPanel();
+                JComponent publishPanel = new JPanel();
+ 
+                JButton connectToBrokerButton = new JButton("Connect To Broker");
+                connectToBrokerButton.addActionListener(new ConnectToBrokerListener());
+                northFramePanel.add(connectToBrokerButton);
+
+                JButton addTopic = new JButton("+ Topic");
 				addTopic.addActionListener(new addTopicListener());
-				northFramePanel.add(addTopic);
+                northFramePanel.add(addTopic);
+                
+                objectsFrame.getContentPane().add(BorderLayout.NORTH, northFramePanel);
 
-				objectFrame.getContentPane().add(BorderLayout.NORTH, northFramePanel);
-		
+                //tabs for subscribe and publish
+                thePJTabbedPane.add("Subscriptions Tab", subscribePanel);
+                thePJTabbedPane.add("Publications Tab", publishPanel);
+                objectsPanel.add(BorderLayout.CENTER, thePJTabbedPane);
+                
+                objectsFrame.getContentPane().add(BorderLayout.CENTER, objectsPanel);
+                objectsFrame.setSize(400,300);
+                objectsFrame.setVisible(true);
+            }
 
-				thePane.addTab("Subscriptions Tab", subscribePanel);				
+            public class ConnectToBrokerListener implements ActionListener{
+                public void actionPerformed(ActionEvent e){
+                    mqttObj.connectToBroker();
+                }
+            }
 
-				thePane.addTab("Publications Tab", publishPanel);
-				
-				objectFrame.getContentPane().add(BorderLayout.CENTER, thePane);
-				objectFrame.setSize(500,500);
-				objectFrame.setVisible(true);
+            public class addTopicListener implements ActionListener{
 
-			}
-		}
+                public void actionPerformed(ActionEvent e){
+                    topicFrame  = new JFrame("Add Topic");
+                    topicPanel = new JPanel();
+                    topicPanel.setLayout(new BoxLayout(topicPanel, BoxLayout.Y_AXIS));
 
-		public class addTopicListener implements ActionListener{
-			
-			public void actionPerformed(ActionEvent e){
-				topicFrame  = new JFrame("Add Topic");
-				topicPanel = new JPanel();
-				topicPanel.setLayout(new BoxLayout(topicPanel, BoxLayout.Y_AXIS));
+                    JLabel theFriendlyNameLabel = new JLabel("Friendly Name");
+                    JLabel theTopicLabel = new JLabel("Topic");
+                    JLabel theQosLabel = new JLabel("QoS");
 
-				JLabel theFriendlyNameLabel = new JLabel("Friendly Name");
-				JLabel theTopicLabel = new JLabel("Topic");
-				JLabel theQosLabel = new JLabel("QoS");
+                    friendlyNameField = new JTextField(20);
+                    topicField = new JTextField(20);
+                    qosField = new JTextField(20);
 
-				friendlyNameField = new JTextField(20);
-				topicField = new JTextField(20);
-				qosField = new JTextField(20);
+                    JButton createTopicButton = new JButton("Create");
+                    createTopicButton.addActionListener(new CreateTopicListener());
+                    topicPanel.add(theFriendlyNameLabel);
+                    topicPanel.add(friendlyNameField);
+                    topicPanel.add(theTopicLabel);
+                    topicPanel.add(topicField);
+                    topicPanel.add(theQosLabel);
+                    topicPanel.add(qosField);
+                    topicPanel.add(createTopicButton);
 
-				JButton createTopicButton = new JButton("Create");
-				createTopicButton.addActionListener(new CreateTopicListener());
+                    topicFrame.getContentPane().add(BorderLayout.CENTER, topicPanel);
+                    topicFrame.setSize(250,250);
+                    topicFrame.setVisible(true);
+                }
 
+                public class CreateTopicListener implements ActionListener{
+                    public void actionPerformed(ActionEvent e){
+                        MTopic = topicField.getText();
+                        MFriendlyName = friendlyNameField.getText();
+                        MQos = qosField.getText();
+                        topicFrame.setVisible(false);
+                    }
+                }
+            }
+        }
 
-				topicPanel.add(theFriendlyNameLabel);
-				topicPanel.add(friendlyNameField);
-				topicPanel.add(theTopicLabel);
-				topicPanel.add(topicField);
-				topicPanel.add(theQosLabel);
-				topicPanel.add(qosField);
-				topicPanel.add(createTopicButton);
-
-				topicFrame.getContentPane().add(BorderLayout.CENTER, topicPanel);
-				topicFrame.setSize(250,250);
-				topicFrame.setVisible(true);
-			}
-
-			public class CreateTopicListener implements ActionListener{
-				public void actionPerformed(ActionEvent e){
-					MTopic = topicField.getText();
-					MFriendlyName = friendlyNameField.getText();
-					MQos = qosField.getText();
-				}
-			}
-		}
-
-		public class connectMQTTListener implements ActionListener{
-			public void actionPerformed(ActionEvent e){
-				//connect to MQTT broker
-				
-
-				
-
-			}
-		}
-
-	}
-
-
-	public class connectionObjects extends JPanel implements Serializable, ActionListener{
-		private static final long serialVersionUID = 1L;
-		String clientId;
-		String serverString;
-		String port;
-		String userName;
-		String passWord;
-		JFrame frame;
-		JPanel panel;
-	
-		transient JTextField clientidField = new JTextField(20);
-		transient JTextField serverField = new JTextField(20);
-		transient JTextField portField = new JTextField(20);
-		transient JTextField userField = new JTextField(20);
-		transient JTextField passField = new JTextField(20);
-	
-		public void makeConnectionObject(){
-	
-			frame = new JFrame("Enter variables");
-			panel = new JPanel();
-			panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-	
-			JLabel theClientID = new JLabel("Client ID");
-			JLabel theServerLabel = new JLabel("Server");
-			JLabel thePortLabel = new JLabel("Port");
-			JLabel theUserLabel = new JLabel("Username");
-			JLabel thePassLabel = new JLabel("Password");
-			JButton saveButton = new JButton("Save variables");
-			saveButton.addActionListener(this);
-	
-			panel.add(theClientID);
-			panel.add(clientidField);
-			panel.add(theUserLabel);
-			panel.add(userField);
-			panel.add(thePassLabel);
-			panel.add(passField);
-			panel.add(theServerLabel);
-			panel.add(serverField);
-			panel.add(thePortLabel);
-			panel.add(portField);
-			panel.add(saveButton);
-			frame.setSize(300,300);
-			frame.getContentPane().add(BorderLayout.CENTER, panel);
-			frame.setVisible(true);
-		}
-	
-		public void actionPerformed(ActionEvent e){
-			clientId = clientidField.getText();
-			serverString = serverField.getText();
-			port = portField.getText();
-			userName = userField.getText();
-			passWord = passField.getText();
-			connList.add(this);   //this list is used to lead objects to the objectPane. cleared later
-			temporaryList.add(this);  //this is maintained
-			frame.setVisible(false);
-
-		}
-
-
-		public String getClientID(){
-			return clientId;
-		}
-
-		//add behaviour
-		public void connectToBroker(){
-
-		}
-
-		public void subscribeToTopic(int qos){
-
-		}
-
-		public void publishToTopic(int qos){
-
-		}
-
-	}
+    }
 }
 
+
+class mqttClass{
+    String clientId;
+    String serverString;
+    String port;
+    String userName;
+    String passWord;
+
+    public void setClientId(String clientid){
+        clientId = clientid;
+
+    }
+    public void setServerString(String server){
+        serverString = server;
+    }
+    public void setPort(String Serverport){
+        port = Serverport;
+
+    }
+    public void setUsername(String user){
+        userName = user;
+    }
+
+    public void setPassword(String pass){
+        passWord = pass;
+    }
+
+
+
+
+    public void connectToBroker(){
+
+        // MqttDashboard mqtt = new MqttDashboard();
+        // MqttDashboard.Gui gui = mqtt.new Gui();
+        // gui.makeFrame();
+
+    }
+
+    public void subsribeToTopic(int qos){
+        
+
+    }
+
+    public void publishToTopic(int qos){
+
+    }
+}
 
 //java com.jadayoIscariot.MQTTDashboard
 	//javac -d ../Classes com/jadayoIscariot/MQTTDashboard.java
